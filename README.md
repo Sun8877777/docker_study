@@ -151,4 +151,94 @@ docker container run -d --name weatherapp-nonroot -p 8086:3000
 docker container run -d --name weatherapp-nonroot -p 8086:3000 linuxacademy/weather-app-nonroot:v1
 
 WORKING WITH VOLUME
+docker image build -t linuxacademy/nginx:v1 .
 
+---------------------
+MULTY stage
+docker image build -t linuxacademy/weather-app:multy-stage-build --rm --build-arg VERSION=1.5 .
+------------------------
+Tagging
+docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+docker image tag sun8877777/weather-app:b301a90001b1524de26f9fdd92694e61cf2d3724 sun8877777/weather-app:latest
+docke push sun8877777/weather-app:latest
+-------------------
+History
+docker image history
+docker image history --no-trunc
+docker image history --quiet --no-trunc
+--------------------
+Save to .tar
+docker image save <image> > <FILE>.tar
+docker image save <image> -o <FILE>.tar
+docker image save <image> --output <FILE>.tar
+
+Load from .tar
+docker image load < <FILE>.tar
+docker image load -i <FILE>.tar
+docker image load --input <FILE>.tar
+-------------------
+Инспектирование
+docker container top <NAME>
+docker container stats <NAME>
+----------------------
+Автоматический запуск контейнеров
+--restart
+    - no                        -- не перзапускать, по умолчанию
+    - on-failrule               -- если есть код завершения, не равный 0
+    - always                    -- всегда перезапускать
+    - unless-stopped            -- перезапуск всегда, кроме того, когда вы сами остановили контейнер
+docker update --restart unless-stopped <NAME> -- Изменение политики рестарта, для запущенного контейнера
+
+docker run -d --name always-restart --restart always sun8877777/weather-app:latest
+docker run -d --name nless-restart --restart unless-stopped  sun8877777/weather-app:latest
+sudo systemctl restart docker
+------------------------------
+Docker EVENTS
+docker system events
+docker system events --since '<TIME_PERIOD>'
+docker system events --filter <FILTER_NAME>=<FILTER>
+docker system events --since '1h'
+docker system events --filter type=container --since '1h'
+docker system events --filter type=container --filter event=start --since '1h'
+docker system events --filter type=container --filter event=attach --filter event=die  --filter event=stop --since '1h'
+-----------------------------
+Управление остановленными контейнерами
+docker container ls -a -q
+docker container ls -a -f status=exited
+------------------------------
+Портайнер
+docker volume create portainer_data
+docker container run -d --name portainer -p 8080:9000 \
+--restart=always \
+-v /var/run/docker.sock:/var/run/docker.sock \
+-v portainer_data:/data portainer/portainer
+docker container ls
+----------------------------
+WatchTower - перезапуск образов при изменении в них
+
+git clone https://github.com/linuxacademy/content-express-demo-app.git watchtower
+git checkout dockerfile
+docker image build -t sun8877777/my-express .
+docker container run -d --name watch-app -p 80:3000 --restart always sun8877777/my-express
+docker container run -d --name watchtower \
+--restart always \
+-v /var/run/docker.sock:/var/run/docker.sock \
+v2tec/watchtower -i 15
+----------------------------
+docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+docker-compose --version
+------------------
+Compose commands
+docker-compose
+  - up create and start
+  - ps
+  - stop
+  - start
+  - restart
+  - down -- stop and remove
+----------------------
+docker-compose build
+Тома и сети в compose
