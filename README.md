@@ -241,4 +241,88 @@ docker-compose
   - down -- stop and remove
 ----------------------
 docker-compose build
-Тома и сети в compose
+--------------------
+docker swarm
+docker swarm init --advertise-addr [PRIVATE_IP]  -- init manager, ип объявленный здесь показывает остальным членам роя, через кого идти в апи
+docker swarm join --token [TOKEN] [PRIVATE_IP]:2377
+docker node ls
+------------
+docker swarm init --advertise-addr 192.168.88.166
+docker swarm join --token SWMTKN-1-5suuu2rfwtk0z13rwzm04vx5kctr84xk9chmpv4k1i2rvbwmpu-8eh6jim6ad4z0dtqszi5yci26 192.168.88.166:2377  -- для других членов роя
+docker node ls
+docker node promote [id]  - повышение уровня ноды до управляющего
+docker node demote [id]  - понижение уровня ноды до обычного
+docker node rm -f [NODE_NAME]  delete node from swarm
+docker swarm leave  - command in node(exit from swarm)
+docker swarm join-token [type]((worker|manager))
+-------------------
+services
+docker service create -d --name [name] \
+-p [HOST_PORT]:[CONTAINER_PORT]\
+--replicas [REPLICAS] [IMAGE] [CMD]
+docker service ls
+docker service inspect [NAME]
+docker service logs [NAME]
+----
+docker service COMMAND
+Commands:
+  create      Create a new service
+  inspect     Display detailed information on one or more services
+  logs        Fetch the logs of a service or task
+  ls          List services
+  ps          List the tasks of one or more services
+  rm          Remove one or more services
+  rollback    Revert changes to a service's configuration
+  scale       Scale one or multiple replicated services
+  update      Update a service
+-----
+docker service create -d --name nginx_service -p 8080:80 --replicas 2 nginx:latest
+docker service inspect nginx_service
+docker service logs nginx_service
+docker service scale nginx_service=3
+docker service update --help
+--------
+Network in SWARM
+docker network create  -d overlay [NAME]
+docker service create -d --name \
+-- network [NETWORK]
+-p [HOST_PORT]:[CONTAINER_PORT] \
+--replicas  [REPLICAS] \
+[IMAGE] [CMD]
+-----
+docker service update --network-add [NETWORK] [SERVICES]
+docker network create -d overlay my_overlay
+docker network create -d overlay --opt encrypted encrypted_overlay - шифрованная сеть
+docker service create -d --name nginx_overlay --network my_overlay -p 8081:80 --replicas 2 nginx:latest
+docker service update --network-add my_overlay nginx_service
+docker service update --network-rm my_overlay nginx_service
+docker network rm encrypted_overlay
+------
+Volumes
+docker plugin install [PLUGIN] [OPTION]
+docker plugin ls
+volumePlugins^
+    Hedvig
+    Pure Storage
+    HPE Nimble Storage
+    Nutanix DVP
+    Blockbridge
+    NexentaStor
+    StorageOS
+    Rex-Ray
+---------
+docker plugin install store/splunk/docker-logging-plugin:2.0.0 --alias splunk-logging-plugin
+docker plugin disable [id]
+docker plugin rm [id]
+docker volume create -d local portainer_data
+docker service create --name portainer --publish 8000:9000 \
+--constraint 'node.role == manager' --mount type=volume,src=portainer_data,dst=/data \
+--mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+portainer/portainer
+--------------------------
+Стэки
+docker stack deploy --compose-file docker-compose.yaml prometheus
+docker stack ls
+sudo chown nobody:65534 -R prometheus.yaml 
+sudo chown nobody:nogroup -R /var/lib/docker/volumes/prometheus_data
+docker stack deploy --compose-file docker-compose.yaml prometheus
