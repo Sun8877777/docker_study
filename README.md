@@ -326,3 +326,24 @@ docker stack ls
 sudo chown nobody:65534 -R prometheus.yaml 
 sudo chown nobody:nogroup -R /var/lib/docker/volumes/prometheus_data
 docker stack deploy --compose-file docker-compose.yaml prometheus
+--------------
+SECCOMP PROFILE
+wget https://raw.githubusercontent.com/moby/moby/master/profiles/seccomp/default.json
+docker container run --rm -it --security-opt seccomp=./default.json alpine
+
+docker container --cap-drop=[CAPABILITY] [IMAGE] [CMD]
+docker container --cap-add=[CAPABILITY] [IMAGE] [CMD]
+docker container run --rm -it  alpine sh
+mknod /dev/random2 c 1 8
+docker container run --rm -it --cap-drop=MKNOD alpine sh
+mknod /dev/random2 c 1 8
+
+docker container run -it --cpus=[VALUE] --memory=[VALUE][SIZE] --memory-swap [VALUE][SWAP] [IMAGE] [CMD]
+----------------------------------
+Secrets
+STDIN | docker secret create [NAME]
+docker secret create [NAME] [FILE]
+docker secret ls
+docker secret inspect
+docker service create --name [NAME] --sectet [SECRET] [IMAGE]
+openssl rand -base64 20 | docker secret create my_secret -
